@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TV Kill Switch Control Panel</title>
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --panel-bg: #161b22;
+            --accent-color: #ff4757;
+            --accent-hover: #ff6b81;
+            --text-color: #c9d1d9;
+            --text-bright: #ffffff;
+            --border-color: #30363d;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        header {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        h1 {
+            color: var(--text-bright);
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        p.subtitle {
+            color: #8b949e;
+            font-size: 0.95rem;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .tv-card {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .tv-card:hover {
+            transform: translateY(-3px);
+            border-color: #8b949e;
+        }
+
+        .tv-info {
+            margin-bottom: 1.5rem;
+        }
+
+        .tv-name {
+            font-size: 1.2rem;
+            color: var(--text-bright);
+            margin-bottom: 0.3rem;
+            font-weight: 600;
+        }
+
+        .tv-location {
+            font-size: 0.85rem;
+            color: #8b949e;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            font-size: 0.8rem;
+            margin-top: 0.8rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+
+        .status-dot.online {
+            background-color: #2ea043;
+            box-shadow: 0 0 6px rgba(46, 160, 67, 0.4);
+        }
+
+        .status-dot.offline {
+            background-color: #8b949e;
+        }
+
+        .controls {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        button {
+            flex: 1;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease, opacity 0.2s ease;
+        }
+
+        button.btn-off {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        button.btn-off:hover {
+            background-color: var(--accent-hover);
+        }
+
+        button.btn-toggle {
+            background-color: #21262d;
+            color: var(--text-bright);
+            border: 1px solid var(--border-color);
+        }
+
+        button.btn-toggle:hover {
+            background-color: #30363d;
+        }
+
+        .global-actions {
+            margin-top: 2.5rem;
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .btn-global-off {
+            background-color: #b31d28;
+            color: white;
+            padding: 0.85rem 1.5rem;
+            font-size: 1rem;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+
+        .btn-global-off:hover {
+            background-color: #da3633;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>TV Kill Switch Control Panel</h1>
+        <p class="subtitle">Remote power management interface for target displays</p>
+    </header>
+
+    <div class="dashboard" id="tvGrid">
+        <!-- Dynamic TV nodes will be populated via script -->
+    </div>
+
+    <div class="global-actions">
+        <button class="btn-global-off" onclick="shutDownAllTvs()">SHUT DOWN ALL TVs</button>
+    </div>
+
+    <script>
+        // Mock data registry for connected television nodes
+        const tvNodes = [
+            { id: 'tv_01', name: 'Living Room OLED', location: 'Living Room', status: 'online' },
+            { id: 'tv_02', name: 'Master Bedroom Panel', location: 'Bedroom', status: 'online' },
+            { id: 'tv_03', name: 'Kitchen Smart Display', location: 'Kitchen', status: 'offline' },
+            { id: 'tv_04', name: 'Basement Gaming Setup', location: 'Basement', status: 'online' },
+            { id: 'tv_05', name: 'Guest Room Display', location: 'Guest Room', status: 'offline' }
+        ];
+
+        function renderDashboard() {
+            const grid = document.getElementById('tvGrid');
+            grid.innerHTML = '';
+
+            tvNodes.forEach(tv => {
+                const card = document.createElement('div');
+                card.className = 'tv-card';
+                card.innerHTML = `
+                    <div class="tv-info">
+                        <div class="tv-name">${tv.name}</div>
+                        <div class="tv-location">${tv.location}</div>
+                        <div class="status-indicator">
+                            <span class="status-dot ${tv.status}"></span>
+                            <span>${tv.status.toUpperCase()}</span>
+                        </div>
+                    </div>
+                    <div class="controls">
+                        <button class="btn-off" onclick="powerOffTv('${tv.id}')">Power Off</button>
+                        <button class="btn-toggle" onclick="toggleTvState('${tv.id}')">Toggle</button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function powerOffTv(id) {
+            const target = tvNodes.find(t => t.id === id);
+            if (target) {
+                target.status = 'offline';
+                // Backend integration hook placeholder:
+                // fetch(`/api/tvs/${id}/power`, { method: 'POST', body: JSON.stringify({ state: 'OFF' }) });
+                console.log(`[SYS_LOG] Transmission sent: Command OFF to unit -> ${target.name} (${id})`);
+                renderDashboard();
+            }
+        }
+
+        function toggleTvState(id) {
+            const target = tvNodes.find(t => t.id === id);
+            if (target) {
+                target.status = target.status === 'online' ? 'offline' : 'online';
+                console.log(`[SYS_LOG] Transmission sent: State toggle for unit -> ${target.name} (${id})`);
+                renderDashboard();
+            }
+        }
+
+        function shutDownAllTvs() {
+            tvNodes.forEach(tv => {
+                tv.status = 'offline';
+            });
+            console.warn('[SYS_ALERT] BROADCAST COMMAND EXECUTED: All display nodes forced to low-power state.');
+            renderDashboard();
+        }
+
+        // Initial paint
+        window.onload = renderDashboard;
+    </script>
+</body>
+</html>
